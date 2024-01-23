@@ -1,6 +1,6 @@
 <script>
   import { createEventDispatcher } from "svelte";
-  let time = "500"; // Default
+  let time = "200"; // Default
   let option = "Sub"; // Default
 
   const dispatch =  createEventDispatcher();

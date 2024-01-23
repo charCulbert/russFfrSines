@@ -25,6 +25,7 @@
   const WAContext = window.AudioContext;
   const context = new WAContext(); // creating the new audio context
   const outputNode = context.createGain(); // creating a gain node
+  outputNode.gain.value = 0.35; // Example initial volume, adjust as needed
   outputNode.connect(context.destination); // connecting the gain node to the output of the audio context
 
   let device;
@@ -32,7 +33,7 @@
   const rnboSetup = async () => {
     try {
       //grab the JSON file and access it as json
-      let rawPatcher = await fetch("samplerRussSines2.export.json");
+      let rawPatcher = await fetch("samplerRussSines8.export.json");
 
       let patcher = await rawPatcher.json();
 
@@ -45,25 +46,24 @@
       //resume Audio Context on a click on the body
       document.body.onclick = () => context.resume();
 
-      let dependencies = await fetch("dependencies.json");
-      dependencies = await dependencies.json();
-
-      // Load the dependencies into the device
-      const results = await device.loadDataBufferDependencies(dependencies);
-      results.forEach((result) => {
-        if (result.type === "success") {
-          console.log(`Successfully loaded buffer with id ${result.id}`);
-        } else {
-          console.log(
-            `Failed to load buffer with id ${result.id}, ${result.error}`
-          );
-        }
-      });
 
       rnboParamSelector = device.parametersById.get("selector");
       rnboParamCutoff = device.parametersById.get("cutoff");
       rnboParamFilterOnOff = device.parametersById.get("filterOnOff");
       rnboParamEnvelope = device.parametersById.get("envelope");
+      
+    // Default values
+    const defaultDuration = "200";
+    const defaultPolarity = "Sub";
+
+    // Call changeSample with default values
+    changeSample({
+      detail: {
+        stimulusDuration: defaultDuration,
+        stimulusPolarity: defaultPolarity
+      }
+    });
+
 
       console.log("success  RNBO");
     } catch (err) {
@@ -106,7 +106,7 @@
       }
 
       function noteOn(note, velocity) {
-        // console.log("Note on:", note, "Velocity:", velocity);
+      console.log("Note on:", note, "Velocity:", velocity);
 
         // Constructing a note-on event
         let midiChannel = 0;
@@ -144,6 +144,8 @@
 
   externalMIDIsetup();
 
+  playScale();
+
   //on screen midi setup
 
   // keys pressed on other inputs like MIDI, typing keyboard, etc.
@@ -180,6 +182,28 @@
     let noteOffEvent = new MIDIEvent(TimeNow, midiPort, noteOffMessage);
     device.scheduleEvent(noteOffEvent);
   }
+
+  //startup music stuff
+
+    // Function to play a note
+    function playNote(pitch, duration) {
+    noteOn({ detail: pitch });
+    setTimeout(() => noteOff({ detail: pitch }), duration);
+  }
+
+  function playScale() {
+  const gDorian = [43, 45, 46, 48, 50, 52, 53, 55, 57, 59, 60, 62, 67];
+  const noteDuration = 150; // Duration for each note in milliseconds
+
+  gDorian.forEach((note, index) => {
+    setTimeout(() => playNote(note, noteDuration), index * noteDuration);
+  });
+
+  // Schedule the final note to play after the last note of the scale
+  const totalDuration = gDorian.length * noteDuration;
+  setTimeout(() => playNote(43, 500), totalDuration);
+}
+
 
   // Function to handle the gain slider change event
   function gainValueChange(event) {
@@ -241,9 +265,9 @@ const changeSample = async (event) => {
   // Construct file names
   console.log(event.detail);
     const fileNames = [
-        `Russell_G1_${stimulusDuration}_${stimulusPolarity}.wav`,
-        `Russell_C2_${stimulusDuration}_${stimulusPolarity}.wav`,
-        `Russell_G2_${stimulusDuration}_${stimulusPolarity}.wav`
+        `media/Russell_G1_${stimulusDuration}_${stimulusPolarity}.wav`,
+        `media/Russell_C2_${stimulusDuration}_${stimulusPolarity}.wav`,
+        `media/Russell_G2_${stimulusDuration}_${stimulusPolarity}.wav`
     ];
     console.log(fileNames);
 
@@ -279,7 +303,7 @@ try {
 <div class="range-slider-container">
   <RangeSlider
     id="volumeSlider"
-    values={[0.4]}
+    values={[0.35]}
     min={0}
     max={0.7}
     step={0.01}
@@ -329,6 +353,7 @@ try {
 <Options on:change={changeSample} />
 <p class='successMessage'>{successMessage}</p>
 </div>
+
 
 
 <style>
