@@ -2,12 +2,15 @@
   export let noteNum;
   export let keyWidth = 56;
   export let pressed = false;
+  export let specialKey = false;
+
 
   import { createEventDispatcher } from "svelte";
   const dispatch = createEventDispatcher();
 
   let isNatural = ![1, 3, 6, 8, 10].includes(noteNum % 12);
   let bias = 0;
+  
 
   // the accidental keys are not perfectly in center
   if (!isNatural) {
@@ -34,6 +37,7 @@
   class:accidental={!isNatural}
   class:natural={isNatural}
   class:pressed
+  class:special={specialKey && !pressed} 
   style="--width: {keyWidth -
     keyWidth * 0.47 * !isNatural}px; transform: translate({bias}px);"
   draggable="false"
@@ -81,4 +85,9 @@
   .natural.pressed {
     background: hsl(0 20% 90%);
   }
+
+  .special {
+    background-color: #4cacb1;
+  }
+
 </style>

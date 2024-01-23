@@ -4,6 +4,10 @@
     export let keysPressed = [];
 
     import Key from "./Key.svelte";
+
+    const specialKeys = [43, 48, 55]; // Replace with the MIDI numbers of your special keys
+
+
     let keys;
 
     $: keys = [...Array(octaves * 12 + 1).keys()].map(
@@ -14,7 +18,7 @@
 <div class="keyboard">
     <div>
         {#each keys as note}
-            <Key noteNum={note} on:noteon on:noteoff pressed={keysPressed.includes(note)}/>
+            <Key noteNum={note} on:noteon on:noteoff pressed={keysPressed.includes(note)} specialKey={specialKeys.includes(note)}/>
         {/each}
     </div>
 </div>
